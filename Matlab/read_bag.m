@@ -1,82 +1,39 @@
 clear; clc; clear all;
 
+% Change to your file's name
 rosbag('info','2019-05-17-20-45-54.bag');
-rosbag('info','2019-05-17-20-50-00.bag');
 
 % load bags
-bag_circled = rosbag('2019-05-17-20-45-54.bag');
-bag_stopped = rosbag('2019-05-17-20-50-00.bag');
+bag = rosbag('2019-05-17-20-45-54.bag');
 
-% topics from '2019-05-17-20-45-54.bag'
-bag_circled.AvailableTopics;
+% topics from the .bag
+bag.AvailableTopics;
 
-% extract some important topics
-RCH = select(bag_circled,'Topic','/imu/raw_compass_heading');
-RPY = select(bag_circled,'Topic','/imu/rpy');
-DC = select(bag_circled,'Topic','/imu/data_compass');
-MAG = select(bag_circled,'Topic','/imu/mag');
-NFIX = select(bag_circled,'Topic','/navsat/fix');
-NVEL = select(bag_circled,'Topic','/navsat/vel');
+% extract some important topics from Heron
+RCH = select(bag,'Topic','/imu/raw_compass_heading');
+RPY = select(bag,'Topic','/imu/rpy');
+DC = select(bag,'Topic','/imu/data_compass');
+MAG = select(bag,'Topic','/imu/mag');
+NFIX = select(bag,'Topic','/navsat/fix');
+NVEL = select(bag,'Topic','/navsat/vel');
 
-% plot the la & lo of two bags
-la_meter = 1/111620.2823499694;
-lo_meter = 1/28525.46930879708;
+% Parameter will later used to transform lo&la to meter
+% ref: http://www.csgnetwork.com/degreelenllavcalc.html
+la_meter = 111034.61;
+lo_meter = 85393.83;
 
+% Get the latitude and longitude from rostopic: /navsat/fix
 msgStructs = readMessages(NFIX,'DataFormat','struct');
-xPoints1 = cellfun(@(m) double(m.Latitude),msgStructs);
-yPoints1 = cellfun(@(m) double(m.Longitude),msgStructs);
+Lo = cellfun(@(m) double(m.Longitude),msgStructs);
+La = cellfun(@(m) double(m.Latitude),msgStructs);
+
+% Plot the data
 figure(1);
-plot(xPoints1,yPoints1);
-% daspect([la_meter lo_meter 1])
+plot(Lo,La);
 hold on;
-axis([39.9405,39.9412,-75.2001,-75.1994]);
-
-bSel = select(bag_stopped,'Topic','/navsat/fix');
-msgStructs = readMessages(bSel,'DataFormat','struct');
-xPoints2 = cellfun(@(m) double(m.Latitude),msgStructs);
-yPoints2 = cellfun(@(m) double(m.Longitude),msgStructs);
-figure(1);
-plot(xPoints2,yPoints2);
-axis([39.9405,39.9412,-75.2001,-75.1994]);
-plot(39.940994,-75.199664,'o','MarkerSize',10);
-legend('2019-05-17-20-45-54.bag','2019-05-17-20-50-00.bag','Parking spot');
-title('[navsat\_fix] plot in 2D map from two bags');
-
-% calculate the variance of the '2019-05-17-20-50-00.bag'
-mean_stopped = mean([xPoints2,yPoints2]);
-xStd = std(xPoints2);   yStd = std(yPoints2);
-figure(3);
-plot(xPoints2,yPoints2,'o-r');
-hold on;
-plot(mean_stopped(1),mean_stopped(2),'o-b');
-legend('2019-05-17-20-50-00.bag','Mean','Ellipse of two std');
-theta_grid = linspace(0,2*pi);
-ellipse_x_r  = 2*xStd*cos( theta_grid );
-ellipse_y_r  = 2*yStd*sin( theta_grid );
-plot(ellipse_x_r +mean_stopped(1) ,ellipse_y_r+ mean_stopped(2),'-');
-axis equal;
-
-% plot the raw compass heading in time and polar
-msgStructs = readMessages(RCH,'DataFormat','struct');
-heading1 = cellfun(@(m) double(m.Data),msgStructs);
-figure(2);
-plot(heading1);
-title('[raw\_compass\_heading] plot in scalar reapect to time.');
-
-figure(4);
-c = linspace(0,255,length(heading1));
-polarscatter(heading1,ones(length(heading1),1),ones(length(heading1),1)+5,c)
-title('[raw\_compass\_heading] plot in polar respect to time.');
-
-% % plot the velocity
-% msgStructs = readMessages(DC,'DataFormat','struct');
-% VX1 = cellfun(@(m) double(m.AngularVelocity.X),msgStructs);
-% VY1 = cellfun(@(m) double(m.AngularVelocity.Y),msgStructs);
-% VZ1 = cellfun(@(m) double(m.AngularVelocity.Z),msgStructs);
-% figure(3);
-% c = linspace(0,255,length(VX1));
-% scatter3(VX1(:,1),VY1(:,1),VZ1(:,1),ones(length(VX1),1)+5,c);
-% grid on;
+xlabel('Longitude(deg)');
+ylabel('Latitude(deg)');
+% axis([39.9405,39.9412,-75.2001,-75.1994]);
 
 % plot the linear velocity
 msgStructs = readMessages(NVEL,'DataFormat','struct');
