@@ -27,3 +27,4 @@ figure(2);
 plot(Lo,La)
 xlabel('Longitude (deg)');
 ylabel('Latitude (deg)');
+ 
