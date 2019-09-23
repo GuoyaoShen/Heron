@@ -14,3 +14,6 @@
 ## Echosounder documents:
   tritech-micron-echo-sounder-ultra-compact-altimeter_hardware_manual.pdf
   tritech-seaking-700-series-bathymetric-oceanographic-sensors_hardware_manual.pdf
+  
+## ROS node rqy plot:
+  rosgraph.png
