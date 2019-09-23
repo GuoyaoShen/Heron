@@ -1,6 +1,6 @@
 # Heron
 All documents about Heron
--  Documentment
+- Documentment
 
   Official documentation.
 - Ros 
@@ -8,4 +8,4 @@ All documents about Heron
   Ros packages impliments on Heron. 
 - Matlab
 
-  Matlab codes for beatiful graphs.
+  Matlab codes for beautiful graphs.
